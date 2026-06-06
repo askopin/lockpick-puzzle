@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Puzzles — Gothic Lockpick Puzzle{% endblock %}
+
+{% block actions %}{% endblock %}
+
+{% block content %}
+<section class="puzzle-list">
+  {% if puzzles %}
+    <ul class="puzzle-list-items">
+      {% for p in puzzles %}
+        <li>
+          <a href="/play/{{ p.id }}" class="puzzle-list-link">
+            <span class="puzzle-list-name">{{ p.name }}</span>
+            <span class="puzzle-list-date">{{ p.created_at.strftime('%Y-%m-%d') }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="puzzle-list-empty">No puzzles yet. <a href="/admin" class="action-link">Add one in the admin.</a></p>
+  {% endif %}
+</section>
+{% endblock %}

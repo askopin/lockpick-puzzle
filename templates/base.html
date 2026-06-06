@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Gothic Lockpick Puzzle{% endblock %}</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Gothic Lockpick Puzzle</h1>
+    <nav class="actions" aria-label="Actions">
+      {% block actions %}{% endblock %}
+    </nav>
+  </header>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, msg in messages %}
+      <div class="flash flash-{{ category }}">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

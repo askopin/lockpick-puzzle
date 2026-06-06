@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Admin Login — Gothic Lockpick Puzzle{% endblock %}
+
+{% block content %}
+<form class="admin-form admin-login-form" method="post" action="/admin/login">
+  <h2>Admin</h2>
+  {% if error %}<p class="io-error">{{ error }}</p>{% endif %}
+  <div class="admin-field">
+    <label for="username">Username</label>
+    <input class="admin-input" type="text" id="username" name="username"
+           autocomplete="username" autofocus>
+  </div>
+  <div class="admin-field">
+    <label for="password">Password</label>
+    <input class="admin-input" type="password" id="password" name="password"
+           autocomplete="current-password">
+  </div>
+  <button type="submit">Login</button>
+</form>
+{% endblock %}

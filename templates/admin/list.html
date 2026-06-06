@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Admin — Gothic Lockpick Puzzle{% endblock %}
+
+{% block actions %}
+  <a href="/admin/puzzles/new" class="action-link">+ New puzzle</a>
+  <a href="/admin/logout" class="action-link">Logout</a>
+{% endblock %}
+
+{% block content %}
+<section class="admin-section">
+  <details class="admin-import">
+    <summary>Import JSON</summary>
+    <form class="admin-import-form" method="post" action="/admin/puzzles/import"
+          enctype="multipart/form-data">
+      <input class="admin-input" type="text" name="name" placeholder="Name (or use name from JSON)">
+      <input type="file" name="file" accept=".json" required>
+      <button type="submit">Import</button>
+    </form>
+  </details>
+
+  {% if puzzles %}
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in puzzles %}
+        <tr>
+          <td><a href="/play/{{ p.id }}" class="action-link-inline">{{ p.name }}</a></td>
+          <td class="muted">{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td class="admin-actions-cell">
+            <a href="/admin/puzzles/{{ p.id }}/edit" class="action-link">Edit</a>
+            <a href="/admin/puzzles/{{ p.id }}/export" class="action-link">Export</a>
+            <form method="post" action="/admin/puzzles/{{ p.id }}/delete" style="display:inline"
+                  onsubmit="return confirm('Delete {{ p.name }}?')">
+              <button type="submit" class="admin-btn-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No puzzles yet. <a href="/admin/puzzles/new" class="action-link-inline">Create one.</a></p>
+  {% endif %}
+</section>
+{% endblock %}

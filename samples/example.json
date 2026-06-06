@@ -1,0 +1,7 @@
+[
+  { "position":  0, "connections": [ 1, -1, -1,  0,  0] },
+  { "position": -1, "connections": [ 1,  1,  0, -1,  0] },
+  { "position":  3, "connections": [-1,  1,  1,  1,  0] },
+  { "position": -2, "connections": [-1,  0,  0,  1,  0] },
+  { "position":  1, "connections": [ 0,  0,  0, -1,  1] }
+]

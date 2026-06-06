@@ -1,0 +1,406 @@
+:root {
+  --bg: #111;
+  --fg: #e8e8e8;
+  --muted: #8a8a8a;
+  --accent: #7cc4ff;
+  --invalid: #ff6b6b;
+  --pin: #ffd166;
+  --hole: #e8e8e8;
+  --bar-bg: transparent;
+  --bar-selected-bg: #1f2a36;
+  --transition-ms: 200ms;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid #222;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem;
+}
+
+.actions button {
+  background: #1a1a1a;
+  color: var(--fg);
+  border: 1px solid #333;
+  padding: .35rem .65rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.actions button:hover { border-color: var(--accent); }
+.actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  padding: 1.5rem 1rem;
+}
+
+.puzzle {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;   /* bar 0 at bottom */
+  align-items: center;
+  gap: .25rem;
+  padding: 1rem;
+  min-height: 12rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  outline: none;
+}
+
+/* Pin overlay: absolutely positioned at fixed world column.
+   Placed by render.js once N is known. */
+.puzzle .pin-rail {
+  position: absolute;
+  top: 1rem;
+  bottom: 1rem;
+  width: 1ch;
+  color: var(--pin);
+  text-align: center;
+  pointer-events: none;
+  /* set by render.js to the middle column of the bar width */
+}
+
+.bar {
+  --pos: 0;
+  position: relative;
+  transform: translateX(calc(var(--pos) * -1ch));
+  transition: transform var(--transition-ms) ease;
+  padding: .15rem .35rem;
+  border-radius: 2px;
+  color: var(--hole);
+  white-space: pre;
+}
+
+/* Pin stays at fixed world column via counter-translation.
+   left = padding-left + 3ch + var(--pos)*1ch cancels bar's translateX. */
+.bar .pin {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: calc(.35rem + 3ch + var(--pos) * 1ch);
+  color: var(--pin);
+  pointer-events: none;
+  transition: left var(--transition-ms) ease;
+}
+
+.bar.selected {
+  background: var(--bar-selected-bg);
+  outline: 1px solid var(--accent);
+}
+
+.bar.invalid {
+  color: var(--invalid);
+  animation: shake var(--transition-ms) ease;
+}
+
+@keyframes shake {
+  0%   { transform: translateX(calc(var(--pos) * -1ch)); }
+  25%  { transform: translateX(calc(var(--pos) * -1ch - .3ch)); }
+  75%  { transform: translateX(calc(var(--pos) * -1ch + .3ch)); }
+  100% { transform: translateX(calc(var(--pos) * -1ch)); }
+}
+
+.status {
+  color: var(--muted);
+  min-height: 1.2em;
+  padding: 0 1rem;
+}
+
+.panel {
+  border: 1px solid #222;
+  padding: 1rem;
+  background: #161616;
+}
+
+.panel[hidden] { display: none; }
+
+.io-textarea {
+  width: 100%;
+  background: #0d0d0d;
+  color: var(--fg);
+  border: 1px solid #333;
+  font: inherit;
+  padding: .4rem;
+  resize: vertical;
+}
+
+.io-error {
+  color: var(--invalid);
+  margin: .25rem 0;
+}
+
+/* Editor — wraps each bar with toggle arrows inside #puzzle */
+.editor-error { color: var(--invalid); }
+
+/* Each bar row: ◀ [bar] ▶ in a flex row */
+.editor-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.editor-arrow {
+  background: transparent;
+  color: #3a3a3a;          /* dim when inactive */
+  border: 1px solid #2a2a2a;
+  padding: .1rem .4rem;
+  font: inherit;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 120ms, border-color 120ms;
+}
+/* Margin (external) = layout space. translateX doesn't affect layout, so we need
+   ≥3ch of actual layout gap between the arrow border and the bar's layout box.
+   0.5rem gap on .editor-bar-wrap adds a small visual cushion on top. */
+.editor-arrow-l { margin-right: 3ch; }
+.editor-arrow-r { margin-left:  3ch; }
+.editor-arrow:hover  { color: var(--muted); border-color: #444; }
+.editor-arrow.active { color: var(--accent); border-color: var(--accent); }
+/* selected bar's arrows hidden via the hidden attribute */
+
+/* Flash messages */
+.flash {
+  padding: .4rem 1rem;
+  font-size: .875rem;
+  border-left: 3px solid var(--muted);
+}
+.flash-error   { border-color: var(--invalid); color: var(--invalid); }
+.flash-success { border-color: #6fcf97; color: #6fcf97; }
+
+/* Shared link-styled as button in topbars */
+.action-link {
+  display: inline-block;
+  background: #1a1a1a;
+  color: var(--fg);
+  border: 1px solid #333;
+  padding: .35rem .65rem;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.action-link:hover { border-color: var(--accent); }
+
+/* Puzzle list (root route) */
+.puzzle-list { padding: .5rem 1rem; }
+
+.puzzle-list-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+}
+
+.puzzle-list-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: .4rem .65rem;
+  color: var(--fg);
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+.puzzle-list-link:hover { border-color: var(--accent); }
+
+.puzzle-list-date { color: var(--muted); font-size: .875rem; }
+
+.puzzle-list-empty { color: var(--muted); padding: .5rem 0; }
+
+/* Inline text links (inside content, not topbar) */
+.action-link-inline { color: var(--accent); text-decoration: none; }
+.action-link-inline:hover { text-decoration: underline; }
+.muted { color: var(--muted); }
+
+/* Admin forms */
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding: 1.5rem 1rem;
+  max-width: 28rem;
+}
+.admin-form h2 { margin: 0; font-size: 1rem; text-transform: uppercase; color: var(--muted); }
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+.admin-field label { color: var(--muted); font-size: .875rem; }
+
+.admin-input {
+  background: #0d0d0d;
+  color: var(--fg);
+  border: 1px solid #333;
+  font: inherit;
+  padding: .35rem .5rem;
+}
+.admin-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.admin-form button[type="submit"],
+.admin-form button[type="button"] {
+  align-self: flex-start;
+  background: #1a1a1a;
+  color: var(--fg);
+  border: 1px solid #333;
+  padding: .35rem .65rem;
+  font: inherit;
+  cursor: pointer;
+}
+.admin-form button:hover { border-color: var(--accent); }
+
+/* Admin name row on edit page */
+.admin-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: .75rem;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid #222;
+}
+.admin-name-row label { color: var(--muted); white-space: nowrap; }
+.admin-name-row .admin-input { flex: 1; max-width: 28rem; }
+
+.admin-desc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid #222;
+}
+.admin-desc-row label { color: var(--muted); white-space: nowrap; padding-top: .3rem; }
+.admin-desc-row .optional { font-size: .75rem; opacity: .5; }
+.admin-textarea { flex: 1; max-width: 28rem; resize: vertical; min-height: 4rem; }
+
+.puzzle-description {
+  padding: .5rem 1rem;
+  color: var(--muted);
+  font-size: .9rem;
+  max-width: 40rem;
+  line-height: 1.5;
+}
+
+/* Admin import collapsible */
+.admin-import { margin-bottom: 1rem; }
+.admin-import summary {
+  cursor: pointer;
+  color: var(--muted);
+  padding: .3rem 0;
+  user-select: none;
+}
+.admin-import summary:hover { color: var(--fg); }
+.admin-import-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  padding: .5rem 0;
+}
+.admin-import-form .admin-input { flex: 1; min-width: 12rem; max-width: 20rem; }
+.admin-import-form button {
+  background: #1a1a1a;
+  color: var(--fg);
+  border: 1px solid #333;
+  padding: .35rem .65rem;
+  font: inherit;
+  cursor: pointer;
+}
+.admin-import-form button:hover { border-color: var(--accent); }
+
+/* Admin section + table */
+.admin-section { padding: 1rem; }
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+.admin-table th {
+  text-align: left;
+  color: var(--muted);
+  padding: .3rem .5rem;
+  border-bottom: 1px solid #222;
+}
+.admin-table td {
+  padding: .35rem .5rem;
+  border-bottom: 1px solid #1a1a1a;
+  vertical-align: middle;
+}
+.admin-actions-cell { display: flex; gap: .25rem; align-items: center; flex-wrap: wrap; }
+
+.admin-btn-danger {
+  background: transparent;
+  color: var(--invalid);
+  border: 1px solid #3a1a1a;
+  padding: .2rem .5rem;
+  font: inherit;
+  cursor: pointer;
+}
+.admin-btn-danger:hover { border-color: var(--invalid); }
+
+/* Solver panel */
+.solver-controls { display: flex; gap: .25rem; flex-wrap: wrap; }
+.solver-movelist {
+  max-height: 16rem;
+  overflow-y: auto;
+  padding-left: 2.5rem;
+  margin: .5rem 0;
+}
+.solver-movelist li { padding: .1rem 0; color: var(--muted); }
+.solver-step-done   { color: var(--fg); }
+.solver-step-active {
+  color: var(--accent);
+  font-weight: bold;
+  background: rgba(124, 196, 255, 0.08);
+  padding-top: .2rem;
+  padding-bottom: .2rem;
+}
+
+.solver-keyseq {
+  font-size: .8rem;
+  color: var(--muted);
+  word-break: break-all;
+  padding: .35rem .5rem;
+  background: #0d0d0d;
+  border: 1px solid #1e1e1e;
+  letter-spacing: .05em;
+}
+
+.solver-step-keys {
+  display: inline-block;
+  min-width: 5ch;
+  color: var(--accent);
+  letter-spacing: .04em;
+  margin-right: .5ch;
+}

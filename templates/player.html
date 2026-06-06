@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ puzzle.name }} — Gothic Lockpick Puzzle{% endblock %}
+
+{% block actions %}
+  <a href="/" class="action-link">← Puzzles</a>
+  <button type="button" id="btn-reset">Reset</button>
+  <button type="button" id="btn-solve">Auto-solve</button>
+{% endblock %}
+
+{% block content %}
+  <script id="puzzle-data" type="application/json">{{ puzzle.data | tojson }}</script>
+
+  {% if puzzle.description %}
+  <p class="puzzle-description">{{ puzzle.description }}</p>
+  {% endif %}
+
+  <section id="puzzle" class="puzzle" aria-label="Puzzle board" tabindex="0">
+    <!-- bars rendered here by js/render.js -->
+  </section>
+
+  <aside id="status" class="status" aria-live="polite"></aside>
+
+  <section id="editor-panel" class="panel" hidden aria-label="Puzzle editor">
+    <!-- not used in player mode -->
+  </section>
+
+  <section id="solver-panel" class="panel" hidden aria-label="Solver playback">
+    <!-- populated by js/app.js when solving -->
+  </section>
+
+  <section id="io-panel" class="panel" hidden aria-label="Import / export">
+    <!-- populated by js/io.js -->
+  </section>
+
+  <script type="module" src="/js/app.js"></script>
+{% endblock %}

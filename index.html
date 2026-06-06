@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gothic Lockpick Puzzle</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Gothic Lockpick Puzzle</h1>
+    <nav class="actions" aria-label="Puzzle actions">
+      <button type="button" id="btn-reset">Reset</button>
+      <button type="button" id="btn-new">New puzzle</button>
+      <button type="button" id="btn-load">Load JSON</button>
+      <button type="button" id="btn-export">Export JSON</button>
+      <button type="button" id="btn-solve">Auto-solve</button>
+      <button type="button" id="btn-sample">Load sample</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="puzzle" class="puzzle" aria-label="Puzzle board" tabindex="0">
+      <!-- bars rendered here by js/render.js -->
+    </section>
+
+    <aside id="status" class="status" aria-live="polite"></aside>
+
+    <section id="editor-panel" class="panel" hidden aria-label="Puzzle editor">
+      <!-- populated by js/editor.js -->
+    </section>
+
+    <section id="solver-panel" class="panel" hidden aria-label="Solver playback">
+      <!-- populated by js/app.js when solving -->
+    </section>
+
+    <section id="io-panel" class="panel" hidden aria-label="Import / export">
+      <!-- populated by js/io.js -->
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

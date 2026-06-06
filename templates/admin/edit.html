@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{% if puzzle %}Edit "{{ puzzle.name }}"{% else %}New Puzzle{% endif %} — Admin{% endblock %}
+
+{% block actions %}
+  <a href="/admin" class="action-link">← Admin</a>
+  <a href="/admin/logout" class="action-link">Logout</a>
+{% endblock %}
+
+{% block content %}
+  {% if puzzle %}
+    <script id="edit-puzzle-data" type="application/json">{{ puzzle.data | tojson }}</script>
+  {% endif %}
+
+  <div class="admin-name-row">
+    <label for="puzzle-name">Name</label>
+    <input class="admin-input" type="text" id="puzzle-name"
+           value="{{ puzzle.name if puzzle else '' }}"
+           placeholder="Untitled puzzle" autofocus>
+    <span id="admin-save-error" class="io-error" hidden></span>
+  </div>
+  <div class="admin-desc-row">
+    <label for="puzzle-description">Description <span class="optional">(optional)</span></label>
+    <textarea class="admin-input admin-textarea" id="puzzle-description"
+              placeholder="A short description shown to players…">{{ puzzle.description if puzzle and puzzle.description else '' }}</textarea>
+  </div>
+
+  <section id="puzzle" class="puzzle" aria-label="Puzzle editor" tabindex="0"></section>
+  <aside id="status" class="status" aria-live="polite"></aside>
+  <section id="editor-panel" class="panel" aria-label="Editor toolbar"></section>
+
+  <script type="module">
+    import { enterEditMode } from '/js/editor.js';
+    import { installControls } from '/js/controls.js';
+
+    const puzzleEl   = document.getElementById('puzzle');
+    const editorPanel = document.getElementById('editor-panel');
+    const nameInput  = document.getElementById('puzzle-name');
+    const descInput  = document.getElementById('puzzle-description');
+    const errorEl    = document.getElementById('admin-save-error');
+
+    const dataEl = document.getElementById('edit-puzzle-data');
+    const initialBars = dataEl ? JSON.parse(dataEl.textContent) : null;
+
+    async function saveToServer(bars) {
+      const resp = await fetch(window.location.pathname, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: nameInput.value.trim(), description: descInput.value.trim() || null, bars }),
+      });
+      if (resp.ok) {
+        window.location.href = '/admin';
+      } else {
+        const body = await resp.json().catch(() => ({}));
+        errorEl.textContent = body.error || 'Save failed.';
+        errorEl.hidden = false;
+      }
+    }
+
+    const { handleMove, handleSelect } = enterEditMode(puzzleEl, editorPanel, {
+      initialBars,
+      saveLabel: 'Save',
+      onSave: (bars) => {
+        errorEl.hidden = true;
+        const name = nameInput.value.trim();
+        if (!name) throw new Error('Enter a puzzle name.');
+        saveToServer(bars);  // async, errors surfaced via errorEl
+      },
+      onCancel: () => { window.location.href = '/admin'; },
+    });
+
+    installControls({ onMove: handleMove, onSelect: handleSelect });
+  </script>
+{% endblock %}
